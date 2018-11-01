@@ -1,0 +1,955 @@
+<html>
+<head>
+
+<title>JobViz</title>
+<link type="text/css" rel="stylesheet" href="layout-default-latest.css" />
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<style type="text/css" src="jquery-ui.css"></style>
+<script src="jquery-1.11.1.min.js"></script>
+<script src="d3.v3.min.js"></script>
+<script src="d3.layout.cloud.js"></script>	
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<!--<script src="http://d3js.org/colorbrewer.v1.min.js"></script>-->
+
+<script type="text/javascript" src="colorbrewer.v1.min.js"></script>
+
+
+<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
+
+
+<script type="text/javascript" src="jquery-latest.js"></script>
+<script type="text/javascript" src="jquery-ui-latest.js"></script>
+<script type="text/javascript" src="jquery.layout-1.3.0.rc30.80.js"></script>
+
+
+
+<script type="text/javascript" src="debug.js"></script>
+<script type="text/javascript" src="legend.js"></script>
+
+	
+
+<style type="text/css">
+
+  br {
+   display: block;
+   margin: 8px 0;
+}
+
+
+	p{
+		font-size:		1em;
+		margin:			1ex 0;
+	}
+	p.buttons {
+		text-align:		center;
+		line-height:	2em;
+	}
+	button {
+		line-height:	normal;
+	}
+	.hidden {
+		display:		none;
+	}
+
+	/*
+	 *	Rules for simulated drop-down/pop-up lists
+	 */
+	ul {
+		/* rules common to BOTH inner and outer UL */
+		z-index:	100000;
+		margin:		0.75ex 0;
+		padding:	0;
+		list-style:	none;
+		cursor:		pointer;
+		border:		1px solid Black;
+		/* rules for outer UL only */
+		width:		15ex;
+		position:	relative;
+	}
+	ul li {
+		background-color: #EEE;
+		padding: 0.15em 1em 0.3em 3px;
+	}
+	ul ul {
+		display:	none;
+		position:	absolute;
+		width:		100%;
+		left:		-1px;
+		/* Pop-Up */
+		bottom:		0;
+		margin:		0;
+		margin-bottom: 1.55em;
+	}
+	.ui-layout-north ul ul 
+	{
+		/* Drop-Down */
+		bottom:		auto;
+		margin:		0;
+		margin-top:	1.45em;
+	}
+	ul ul li		{ padding: 3px 1em 3px 5px; }
+	ul ul li:hover	{ background-color: #FF9; }
+	ul li:hover ul	{ display:	block; background-color: #EEE; }
+
+
+.ui-layout-west
+{
+	 background: #E6E6E6;
+	 margin: 2px;
+	 overflow-x: hidden;
+}
+
+
+.smallwidget
+{
+	  position: fixed;
+	  bottom: 2.5%;
+	  left:  8px;
+	  width: 236px;
+	  height: 33.5%;
+	  background: #FFFFFF;	   
+}
+
+
+
+.tabbutton
+{
+	  position: fixed;
+	  bottom: 36%; 
+	  width:118px; 
+	  height:27px; 
+	  left: 8px;
+	  font-size: 16px; 
+	  font-family:Times New Roman; 
+	  font-weight: bold;
+	  
+	  background-color: #C5C5C5; 
+    border: none;
+    padding: 2px 2px;
+}
+
+.tabbutton:active 
+{
+    background-color: #FFFFFF;
+    border: none;
+    transform: translateY(3px);
+}
+
+
+.tabbutton:checked 
+{
+    background-color: white;
+    border: none;
+}
+
+
+
+.newbutton 
+{
+  position: fixed;
+	top: 52%; 
+  padding: 1.5px 1.5px;
+  width:100px;
+  height:28px;
+  font-size: 10px;
+  font-family: Times New Roman;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  outline: none;
+  color: #fff;
+  background-color: #4CAF50;
+  border: none;
+  border-radius: 6px;
+  box-shadow: 0 4px #999;
+}
+
+.newbutton:hover {background-color: #3e8e41}
+
+.newbutton:active 
+{
+  background-color: #3e8e41;
+  box-shadow: 0 4px #666;
+  transform: translateY(3px);
+}
+
+.newbutton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+
+
+
+
+.axis {
+	  font: 10px sans-serif;
+	}
+
+	.axis path,
+	.axis line {
+	  fill: none;
+	  stroke: #000;
+	  shape-rendering: crispEdges;
+	}
+
+
+
+.node 
+{
+  font: 700 36px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  fill: black;
+}
+
+
+.secondarygroupnode
+{
+  font: 700 100px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  fill: #FFFFFF;
+  opacity: 0;
+}
+
+.secondarygroupnode:hover 
+{
+  fill: #FF0000;
+  font-size: 60px;
+  opacity: 1;
+}
+
+
+.link 
+{
+  stroke: #A0A0A0;
+  stroke-opacity: 0.67;
+  stroke-width: 2;
+  fill: none;
+  pointer-events: none;
+}
+
+
+.highlightlink 
+{
+  stroke-opacity: 1.0;
+  fill: none;
+  pointer-events: none;
+}
+
+
+.fadedlink 
+{
+  stroke: #A0A0A0;
+  stroke-opacity: 0.15;
+  fill: none;
+  pointer-events: none;
+  stroke-width: 2;
+}
+
+
+.ribbon 
+{
+  stroke-opacity: 1.0;
+  fill: none;
+  pointer-events: none;
+}
+
+
+.grouptag
+{
+	fill: #000;
+  font-size: 36px;
+  font-weight: 500; 
+}
+
+
+.grouptag:hover 
+{
+  fill: #0000FF;
+  font-size: 80px;
+  font-weight: 700;
+}
+
+
+.groupinformation
+{
+  fill: black;
+  font: 900 76px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+
+.groupsizelabel
+{
+	 fill: black;
+   font: 900 88px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+
+.groupnode 
+{
+  fill: #000;
+  font: 500 72px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.groupnode:hover 
+{
+  fill: #000;
+  font-size: 100px;
+  font-weight: 1000;
+}
+
+
+.subgroupnode
+{
+	fill: #000;
+  font: 900 72px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.subgroupnode:hover 
+{
+  fill: #000;
+  font-size: 100px;
+  font-weight: 1000;
+}
+
+
+.jobgroupnode 
+{
+  fill: #000;
+  font: 900 64px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+
+.connectjobgroupnode 
+{
+  font: 900 100px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+
+
+
+.jobgroupnode:hover 
+{
+  fill: #000;
+  font-size: 120px;
+  font-weight: 1000;
+}
+
+
+.majorgroupnode 
+{
+  fill: #000;
+  font: 500 64px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+
+
+
+.node--source,
+.node--target 
+{
+  font-weight: 700;
+  fill: #0000FF;
+}
+
+.node--source 
+{
+  fill: #2ca02c;
+  font-size: 90px;
+  opacity: 1.0;
+}
+
+.node--target 
+{
+  fill: red;
+  font-size: 50px;
+  opacity: 1.0;
+}
+
+.node--clicked 
+{
+  fill: red;
+  font-size: 100px;
+  font-weight: 700;
+  opacity: 1.0;
+}
+
+
+.node--fisheyed 
+{
+  font-size: 80px;
+  font-weight: 700;
+  text-shadow: 3px 3px 3px  #FFFFFF;
+}
+
+
+.node--fisheyeclicked 
+{
+  fill: #FFA500;
+  font-size: 100px;
+  font-weight: 700;
+}
+
+
+.node--hovered 
+{
+  fill: #000;
+  font-size: 100px;
+  font-weight: 700;
+}
+
+
+.node--faded
+{
+  font: 700 32px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  fill: black;
+  opacity: 0.25;
+}
+
+
+
+.node--disappeared
+{
+  font: 700 32px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  fill: black;
+  opacity: 0.25;
+}
+
+
+
+.link--source,
+.link--target 
+{
+  stroke-opacity: 1;
+  stroke-width: 3px;
+}
+
+.link--source 
+{
+  stroke: #d62728;
+}
+
+.link--target {
+  stroke: #2ca02c;
+}
+
+
+
+.levelindicator 
+{
+  fill: black;
+  font: 500 13px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+
+
+#wrapper 
+{
+    width: 240px;
+    border: 1px solid white;
+    overflow: hidden; /* will contain if #first is longer than #second */
+}
+#first 
+{
+    width: 188px;
+    float:left; /* add this */
+    border: 1px solid white;
+}
+#second 
+{
+    border: 1px solid white;
+    overflow: hidden; /* if you don't want #second to wrap below #first */
+}
+
+
+
+
+
+div.tooltip 
+{
+    position: absolute;    
+    text-align: left;
+    width: 500px;    
+    padding: 4px;    
+    border: 0px;
+    border-radius: 5px;
+    pointer-events: none;
+}
+			
+
+.mybutton 
+{
+    padding:6px 12px;
+    background:#ffae00;
+    background: -webkit-linear-gradient(top, #ffae00, #d67600);
+    background: -moz-linear-gradient(top, #ffae00, #d67600);
+    background: -o-linear-gradient(top, #ffae00, #d67600);
+    background: linear-gradient(top, #ffae00, #d67600);
+    font-family:sans-serif; 
+    font-size:0.8em;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:#fff;
+    border-radius:3px;
+    border:0;
+    margin:0;
+}
+
+
+.mybutton2
+{
+    background-color: #000099;
+    background-repeat:no-repeat;
+    font-family:Arial, Helvetica, sans-serif; 
+    font-size:0.8em;
+    outline: white solid 0.5px;
+    cursor:pointer;
+    overflow: hidden;
+    outline:none;
+    color:#FFFFFF;
+}
+
+.style1 
+{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+		
+.style2 
+{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+}
+
+span.bank15
+{
+    padding-left:1000px;
+}
+
+#dialogbox
+{
+	display: none;
+	position: fixed;
+	background: #666;
+	border-radius:7px; 
+	width:510px;
+	z-index: 10;
+}
+
+#dialogbox > div{ background:#666; margin:5px; }
+#dialogbox > div > #dialogboxhead{ background: #666; font-size:20px; padding:5px; color:#CCC; text-align:left;}
+#dialogbox > div > #dialogboxbody1{ background:#333; padding:10px; color:#FFF; height: 70px; overflow-y:scroll;} 
+#dialogbox > div > #dialogboxbody2{ background:#333; padding:10px; color:#FFF; height: 200px; overflow-y:scroll;} 
+#dialogbox > div > #dialogboxfoot{ background: #666; padding:10px; text-align:center; }
+
+
+
+
+#jobdialogbox
+{
+	display: none;
+	position: fixed;
+	background:   	#696969;
+	border-radius:8px; 
+	width:660px;
+	z-index: 10;
+	overflow: auto;
+}
+
+#jobdialogbox > div{ background: 	#696969; margin:6px; }
+#jobdialogbox > div > #jobdialogboxhead{ background:  	#696969; font-size:16px; padding:5px; color:#FFFFFF; text-align:left; text-anchor="middle"}
+#jobdialogbox > div > #jobdialogboxbody{ background: #FFFFFF; font-size:4px; padding:10px; color: #000000; height: 540px; overflow-y:auto; overflow-x:none;} 
+#jobdialogbox > div > #jobdialogboxfoot{ background: 	#696969; font-size:16px; padding:5px; text-align:center; }
+
+
+
+#shopcartdialogbox
+{
+	display: none;
+	position: fixed;
+	background:   	#808080;
+	border-radius:8px; 
+	width:300px;
+	z-index: 10;
+	height: 115px;
+	margin:8px;
+}
+
+#shopcartdialogbox > div{ background: 	#FFFAF0; margin:8px; width:260px; height: 30px;}
+#shopcartdialogbox > div > #shopcartdialogboxbody{ background: #FFFAF0; font-size:18px; padding:10px; color: #FFFFFF; width:265px; height: 30px;} 
+#shopcartdialogbox > div > #shopcartdialogboxfoot{ background: #FFFAF0; font-size:18px; padding:10px; color: #FFFFFF; width:265px; height: 30px;}
+
+
+
+
+
+
+#menu 
+{
+  position: fixed;
+  background-color: #303030;
+  height: 100%;
+  z-index: 10;
+  width: 310px;
+  color: #FFFFFF;
+  top: 0;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  opacity: 1;
+  font-family: "Times New Roman", Georgia, Serif; 
+  padding-left: 10px;
+}
+
+.left { left: -320px; }
+
+.show { left: 0; }
+
+#showmenu 
+{
+  margin-left: 100%;
+  position: absolute;
+  top: 5px;
+  padding: 6px 10px 7px 10px;
+  font-size: 2.3em;
+  color: #0000FF;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+
+
+
+
+
+
+
+#majorform {
+    text-align: left;
+    padding: 4px;
+    border: 1px dotted #999999;
+}
+
+
+#fisheyeform 
+{
+    text-align: left;
+    padding: 1px;
+        border: none;
+}
+
+
+
+.qty 
+{
+    width: 32px;
+    height: 30px;
+    text-align: center;
+    font-size: 16px;
+}
+input.qtyplus { width:30px; height:30px;}
+input.qtyminus { width:30px; height:30px;}
+
+
+
+</style>
+
+
+
+
+<script type="text/javascript">
+	
+
+  var timerStart = Date.now();
+
+
+	function toggleLiveResizing () 
+	{
+		$.each( $.layout.config.borderPanes, function (i, pane) 
+		{
+			var o = myLayout.options[ pane ];
+			o.livePaneResizing = !o.livePaneResizing;
+		});
+	};
+	
+	
+
+	var stateResetSettings = 
+	{
+		north__size:		"auto"
+	,	north__initClosed:	false
+	,	north__initHidden:	false
+	,	south__size:		"auto"
+	,	south__initClosed:	false
+	,	south__initHidden:	false
+	,	west__size:			250
+	,	west__initClosed:	false
+	,	west__initHidden:	false
+	,	east__size:			250
+	,	east__initClosed:	false
+	,	east__initHidden:	false
+	};
+
+	var myLayout;
+
+	$(document).ready(function () 
+	{
+		myLayout = $('body').layout({
+
+		//	reference only - these options are NOT required because 'true' is the default
+			closable:					true	// pane can open & close
+		,	resizable:					true	// when open, pane can be resized 
+		,	slidable:					true	// when closed, pane can 'slide' open over other panes - closes on mouse-out
+		,	livePaneResizing:			true
+
+		//	some resizing/toggling settings
+		,	north__slidable:			false	// OVERRIDE the pane-default of 'slidable=true'
+		,	north__togglerLength_closed: '100%'	// toggle-button is full-width of resizer-bar
+		,	north__spacing_closed:		10		// big resizer-bar when open (zero height)
+		,	south__resizable:			false	// OVERRIDE the pane-default of 'resizable=true'
+		,	south__spacing_open:		0		// no resizer-bar when open (zero height)
+		,	south__spacing_closed:		10		// big resizer-bar when open (zero height)
+
+		//	some pane-size settings
+		,	west__size:				    240
+		,	west__minSize:				120
+		,	east__size:					  240
+		,	east__minSize:				120
+		,	east__maxSize:				.5 // 50% of layout width
+		,	center__minWidth:			600
+
+		//	some pane animation settings
+		,	west__animatePaneSizing:	false
+		,	west__fxSpeed_size:			"fast"	// 'fast' animation when resizing west-pane
+		,	west__fxSpeed_open:			1000	// 1-second animation when opening west-pane
+		,	west__fxSettings_open:		{ easing: "easeOutBounce" } // 'bounce' effect when opening
+		,	west__fxName_close:			"none"	// NO animation when closing west-pane
+
+		//	enable showOverflow on west-pane so CSS popups will overlap north pane
+		,	west__showOverflowOnHover:	false
+
+		//	enable state management
+		,	stateManagement__enabled:	true // automatic cookie load & save enabled by default
+
+		,	showDebugMessages:			true // log and/or display messages from debugging & testing code
+		});
+
+
+
+		/*
+		 *	DISABLE TEXT-SELECTION WHEN DRAGGING (or even _trying_ to drag!)
+		 *	this functionality will be included in RC30.80
+		 */
+		$.layout.disableTextSelection = function(){
+			var $d	= $(document)
+			,	s	= 'textSelectionDisabled'
+			,	x	= 'textSelectionInitialized'
+			;
+			if ($.fn.disableSelection) {
+				if (!$d.data(x)) // document hasn't been initialized yet
+					$d.on('mouseup', $.layout.enableTextSelection ).data(x, true);
+				if (!$d.data(s))
+					$d.disableSelection().data(s, true);
+			}
+		};
+		$.layout.enableTextSelection = function(){
+			var $d	= $(document)
+			,	s	= 'textSelectionDisabled';
+			if ($.fn.enableSelection && $d.data(s))
+				$d.enableSelection().data(s, false);
+			//console.log('$.layout.enableTextSelection');
+		};
+		$(".ui-layout-resizer")
+			.disableSelection() // affects only the resizer element
+			.on('mousedown', $.layout.disableTextSelection ); // affects entire document
+
+ 	});
+	</script>
+
+
+</head>
+
+
+
+
+
+
+
+<meta charset="utf-8">
+
+<body>
+	
+	<div id="includedContent" style="display:none"></div>		
+	<div id="dialogbox">
+  <div>
+    <div id="dialogboxhead"></div>
+    <div id="dialogboxbody1"></div>
+    <br>
+    <div id="dialogboxbody2"></div>
+    <div id="dialogboxfoot"></div>
+  </div>
+</div>	
+
+
+
+
+
+	<div id="jobdialogbox">
+  <div>
+    <div id="jobdialogboxhead"></div>
+    <div id="jobdialogboxbody"></div>
+    <div id="jobdialogboxfoot"></div>
+  </div>
+</div>	
+
+
+
+
+<div id="shopcartdialogbox">
+  <div>
+  	
+    <div id="shopcartdialogboxbody"></div>
+    <div id="shopcartdialogboxfoot"></div>
+   
+  </div>
+</div>	
+	
+	
+
+<div class="ui-layout-west">
+	
+  <div id="mybox1" class="ui-widget">		
+      <script language="JavaScript">
+      	
+	    function GetKeyCode(e)
+      {
+			    return(e.keyCode);
+	    }
+	    
+	    function SelectData(period)
+	    {
+	    	  if (period=="") 
+	    	     return;
+	    	     
+	    	  alert(period);
+	    }
+	    
+	   
+
+
+	    
+	    
+	    
+      </script>		 
+      
+      <p style="font-size:16px; font-family:Times New Roman; font-weight: bold;"> Load Data From: </p>
+
+      <select id="startingdate" style="width: 230px;" onchange="loadData(this.value)">
+      	<option value="jobs2017"> 2017 </option>
+  	    <option value="jobs2016"> 2016 </option>
+  	    <option value="jobs2015"> 2015 </option>
+      </select>
+ 
+      <br>
+      <br>     
+   
+      <p style="font-size:16px; font-family:Times New Roman; font-weight: bold;">Search Major Here:</p>
+      <input type="text" name="majors" id="tags1" size="22" style="line-height: 18px;"    onkeydown="if (GetKeyCode(event)==13) searchmajor();"/>    
+  </div>     
+
+  <br>
+  
+  <div id="mybox2" class="ui-widget">	
+      <p style="font-size:16px; font-family:Times New Roman; font-weight: bold;">Group Majors By:</p>
+      <form id='majorform', style="width:220px;">  
+      <input type="radio" name="majorgroups" id="blue" size="28" onclick="redrawmajorarc()" value="Major Area">  <strong style="font-size:16px; font-family:Arial; font-weight: bold;"> Major Area </strong> &nbsp;
+      <input type="radio" name="majorgroups" id="red" size="28" onclick="redrawmajorarc()" value="School"> <strong style="font-size:16px; font-family:Arial; font-weight: bold;"> School </strong>
+      </form>   
+      <br>
+      <br>
+  
+      <left><img src="lens.png" alt="what image shows" height="18" width="24"></left>   <strong style="font-size:16px; font-family:Times New Roman; font-weight: bold;"> Fisheye Radius: </strong>
+
+      <form id='fisheyeform' method='POST' action='#'>
+      <button type="button" id="minus" style="width:28px; height:30px;  background-color: #E6E6E6; border: none; font-size: 28px" onclick="minusradius()"> - </button>
+      <input type="text" id="radiustext" name='quantity' value='1' class='qty' />
+      <button type="button" id="add" style="width:28px; height:30px; background-color: #E6E6E6; border: none; font-size: 24px" onclick="addradius()"> + </button>  &nbsp; (1~6) 
+      </form>   
+
+      <p style="font-size:16px; font-family:Times New Roman; font-weight: bold;"> Tension of Links: </p> 
+	    <!-- <input id="tensionslider" style="position:relative;top:5px; Left:-12px; width:160px;" type="range" min="61" max="100" value="80" onchange="updatetensionSlider(this.value)"> -->  
+   
+	    <div id="tensionslider" style="position:relative;top:0px; Left:4px; width:160px; height:10px" type="range">  
+	    	<input id="tensioncount" style="position:relative;width:40px; height:30px; Left:180px; top:-12px; font-size:14px;" type="text" value='85' class='qty' />  
+	    </div>     
+      <br>
+      <br>
+      <button type="button" id="cloudbutton" class="newbutton" onclick="plotTagCloud()">Tag Cloud</button> 
+      <button type="button" id="cloudcolorbutton" class="newbutton" style="left: 130" onclick="setCloudColor()">Tag Color</button> 
+   
+ </div> 
+  
+
+ <button type="button" id="majortab" class="tabbutton" style="font-family: Times New Roman" onclick="drawSummaryWidget_Majors()">Majors</button> 
+ <button type="button" id="jobtab" class="tabbutton" style="left: 126; font-family: Times New Roman" onclick="drawSummaryWidget_Jobs()">Jobs</button> 
+  
+  
+  
+  <div id="summaryview" class="smallwidget">   </div>
+  <br>
+  <p style="position: fixed; bottom: -3px; font-size:12px; font-family:Times New Roman; font-style: italic; font-weight: bold;">Copyright@Vizlab, Rutgers University</p>
+</div>
+
+
+
+
+<div class="ui-layout-east">
+	
+	<!-- <div id="mybox4" class="smallwidget">	</div> -->
+	
+	<div id="wrapper"> 
+    <div id="first">
+    <strong style="font-size:16px; font-family:Times New Roman; font-weight: bold; margin-left: -2px">List:  </strong>
+    <select id="mySelect" style="width: 135px; font-size:12px; margin-left: 1px; text-indent: -2px" onchange="changeJobTable(this.value)"  >
+    <option value="all">ALL</option>
+    <option value="none">None</option>
+    <option disabled="disabled">----- Position Type -----</option>
+    <option value="volunteer">Volunteer/Co-op</option>
+    <option value="internship">Internship</option>
+    <option value="ftentrylevel">Entry Level</option>
+    <option value="ftexperienced">Experienced</option>
+    <option disabled="disabled">------ Class Level ------</option>
+    <option value="freshman">Freshman</option>
+    <option value="sophomore">Sophomore</option>
+    <option value="junior">Junior</option>
+    <option value="senior">Senior</option>
+    <option value="graduate">Graduate Student</option>
+    <option value="alumini">Alumini</option>
+    <option value="unspecified">Unspecified</option>
+    </select>
+    </div>
+    <div id="second"><img src="shopping.png" height="27" width="27"></div> 
+  </div>
+   
+  <br> 
+  
+  <div id="currentdblclick"></div>  		
+	<div id="myDynamicTable"> </div>	
+		
+</div>
+
+
+
+<div class="ui-layout-center"> 
+	
+<div id="DataTitle"; type="text" style="font-size: 14px"> </div>  
+
+</div>
+
+<script src="wheel.js"></script>
+
+
+
+
+</body>
+</html>
